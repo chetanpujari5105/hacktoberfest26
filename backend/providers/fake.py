@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 from typing import Literal
 
 from guard.logparse import detect_error, extract_losses
-from guard.models import Probe
+from guard.models import InstanceInfo, Probe
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +113,12 @@ class FakeProvider:
         self._sims[new_id] = _Sim("healthy")
         logger.info("fake: resumed %s as %s on %s", machine_id, new_id, gpu_type or "same GPU")
         return new_id
+
+    async def list_instances(self) -> list[InstanceInfo]:
+        return [
+            InstanceInfo(machine_id=mid, name=f"demo-{mid}-{scenario}", gpu_type="A30")
+            for mid, scenario in sorted(self._scenarios.items())
+        ]
 
     async def balance(self) -> float:
         return 4050.0  # INR, like the real hackathon grant; above the wallet thresholds

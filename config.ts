@@ -21,18 +21,6 @@ const config = {
     supportEmail: "support@example.com",
   },
 
-  // LeaseGuard dashboard behaviour
-  leaseguard: {
-    // How often the dashboard re-fetches runs and the wallet
-    pollIntervalMs: 3000,
-    // Snooze length for "Keep" / "Extend" buttons
-    snoozeMinutes: 30,
-    // Cheaper GPU offered on the "Resume on ..." button
-    resumeGpuOption: "L4",
-    // Pre-filled hourly cost (₹) in the "Guard a run" form; A30 on-demand rate
-    defaultHourlyCostInr: 38.88,
-  },
-
   // NextAuth authentication
   auth: {
     // login page path
@@ -54,15 +42,15 @@ const config = {
     // Lease extension choices shown in the UI, and the bounds the BFF accepts
     extendMinuteOptions: [15, 30, 60, 120],
     extendMinutesRange: { min: 5, max: 240 },
-    // GPU types accepted by "Resume on another GPU"
+    // GPU types accepted by "Resume on another GPU" (names from `jl gpus`)
     gpuTypes: [
-      { value: "H100-80GB", label: "H100 80GB" },
-      { value: "A100-80GB", label: "A100 80GB" },
-      { value: "A100-40GB", label: "A100 40GB" },
-      { value: "RTX6000-Ada", label: "RTX 6000 Ada" },
-      { value: "A6000", label: "RTX A6000" },
-      { value: "A5000", label: "RTX A5000" },
       { value: "L4", label: "L4" },
+      { value: "A30", label: "A30" },
+      { value: "A100", label: "A100 40GB" },
+      { value: "A100-80GB", label: "A100 80GB" },
+      { value: "RTX-PRO6000", label: "RTX PRO 6000" },
+      { value: "H100", label: "H100" },
+      { value: "H200", label: "H200" },
     ],
   },
 

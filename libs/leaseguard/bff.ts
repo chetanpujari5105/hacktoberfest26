@@ -2,6 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { isAuthDisabled } from "@/libs/authMode";
 import config from "@/config";
 import type { BackendResult } from "@/libs/leaseguard/backend";
 import type { ApiEnvelope, ApiError, NoResponseAction, StartGuardBody } from "@/libs/leaseguard/types";
@@ -39,6 +40,7 @@ export const validationError = (message: string): ApiError => ({ code: "VALIDATI
 
 /** Returns an error response when there is no signed-in user. */
 export async function requireSession(route: string) {
+  if (isAuthDisabled()) return null;
   const session = await auth();
   if (!session?.user) {
     return errorResponse(route, { code: "UNAUTHORIZED", message: "Sign in to continue.", status: 401 });

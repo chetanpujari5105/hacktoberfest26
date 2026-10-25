@@ -10,7 +10,7 @@ import shlex
 from datetime import UTC, datetime
 
 from guard.logparse import parse_probe_output
-from guard.models import Probe
+from guard.models import InstanceInfo, Probe
 
 logger = logging.getLogger(__name__)
 EXEC_TIMEOUT_S = 60
@@ -123,6 +123,20 @@ class JarvislabsProvider:
         )
         logger.info("resumed %s as %s", machine_id, instance.machine_id)
         return int(instance.machine_id)
+
+    async def list_instances(self) -> list[InstanceInfo]:
+        instances = await asyncio.to_thread(self._client.instances.list)
+        return [
+            InstanceInfo(
+                machine_id=int(i.machine_id),
+                name=i.name or f"machine-{i.machine_id}",
+                gpu_type=i.gpu_type,
+                gpu_count=i.num_gpus or 1,
+                provider_status=i.status,
+            )
+            for i in instances
+            if i.status == "Running"
+        ]
 
     async def balance(self) -> float:
         result = await asyncio.to_thread(self._client.account.balance)

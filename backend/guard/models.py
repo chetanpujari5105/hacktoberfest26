@@ -44,6 +44,18 @@ class Policy(Frozen):
     keep_snooze_s: int = Field(default=1800, ge=0)
     checkpoint_timeout_s: int = Field(default=300, ge=10)
     max_loops_before_continue: int = Field(default=200, ge=10)
+    # False = "notify only": an unanswered prompt keeps the run going instead of pausing it
+    auto_pause_on_timeout: bool = True
+    preset_id: str | None = None
+
+
+class InstanceInfo(Frozen):
+    machine_id: int
+    name: str
+    gpu_type: str | None = None
+    gpu_count: int = 1
+    provider_status: str = "Running"
+    hourly_rate: float | None = None
 
 
 class Probe(Frozen):

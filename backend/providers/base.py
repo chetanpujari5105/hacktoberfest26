@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from guard.models import Probe
+from guard.models import InstanceInfo, Probe
 
 
 class GpuProvider(Protocol):
@@ -27,3 +27,7 @@ class GpuProvider(Protocol):
         ...
 
     async def balance(self) -> float: ...
+
+    async def list_instances(self) -> list[InstanceInfo]:
+        """Running instances that could be guarded."""
+        ...

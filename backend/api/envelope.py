@@ -20,10 +20,22 @@ def ok(data: Any) -> dict[str, Any]:
     return {"success": True, "data": jsonable_encoder(data), "error": None}
 
 
+CODES = {
+    401: "UNAUTHORIZED",
+    404: "NOT_FOUND",
+    409: "CONFLICT",
+    422: "VALIDATION_ERROR",
+    503: "UNAVAILABLE",
+}
+
+
+def error_body(status: int, message: str) -> dict[str, Any]:
+    code = CODES.get(status, "INTERNAL_ERROR" if status >= 500 else "BAD_REQUEST")
+    return {"success": False, "data": None, "error": {"code": code, "message": message}}
+
+
 def fail(status: int, message: str) -> JSONResponse:
-    return JSONResponse(
-        status_code=status, content={"success": False, "data": None, "error": message}
-    )
+    return JSONResponse(status_code=status, content=error_body(status, message))
 
 
 def install_handlers(app: FastAPI) -> None:

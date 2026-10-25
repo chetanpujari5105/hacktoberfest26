@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { isAuthDisabled } from "@/libs/authMode";
 import content from "@/content";
 import ConsoleHeader from "@/components/leaseguard/ConsoleHeader";
 import ToastProvider from "@/components/leaseguard/ToastProvider";
@@ -11,8 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-  if (!session?.user) {
+  const session = isAuthDisabled() ? null : await auth();
+  if (!isAuthDisabled() && !session?.user) {
     redirect("/login");
   }
 

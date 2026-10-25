@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     # Guard policy defaults (lower them for demos, e.g. PROBE_INTERVAL_S=5)
     probe_interval_s: int = 60
     decision_timeout_s: int = 600
+    # Seconds per "minute" in dashboard policies; 5 makes a 1-minute check run every 5 s (demo)
+    policy_seconds_per_minute: int = Field(default=60, ge=1, le=60)
 
     # Wallet guard thresholds, in INR (the Jarvislabs wallet currency)
     wallet_warn_inr: float = 800.0

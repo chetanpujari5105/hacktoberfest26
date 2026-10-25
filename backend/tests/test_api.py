@@ -14,6 +14,7 @@ from guard.service import (
     RunView,
     validate_run_id,
 )
+from providers.fake import FakeProvider
 from tests.factories import NOW, make_probe
 
 pytestmark = pytest.mark.unit
@@ -40,11 +41,13 @@ class FakeService:
     async def list_runs(self) -> list[RunView]:
         return [_view()]
 
-    async def start_run(self, machine_id: int, name: str, gpu_type: Any, cost: Any) -> RunView:
+    async def start_run(
+        self, machine_id: int, name: str, gpu_type: Any, cost: Any, policy: Any = None
+    ) -> RunView:
         if machine_id in self.guarded:
             raise RunAlreadyGuardedError(f"run-{machine_id}")
         self.guarded.add(machine_id)
-        self.calls.append(("start", (machine_id, name, gpu_type, cost)))
+        self.calls.append(("start", (machine_id, name, gpu_type, cost, policy)))
         return _view(f"run-{machine_id}")
 
     async def get_run(self, run_id: str) -> RunView:
@@ -72,15 +75,11 @@ class FakeService:
         self.calls.append(("stop", run_id))
 
 
-async def _balance() -> float:
-    return 12.5
-
-
 @pytest.fixture
 async def ctx() -> AsyncIterator[tuple[httpx.AsyncClient, FakeService]]:
     service = FakeService()
     settings = Settings(backend_api_key=KEY, provider="fake", llm="off", _env_file=None)
-    app = create_app(settings, service=service, balance=_balance)  # type: ignore[arg-type]
+    app = create_app(settings, service=service, provider=FakeProvider({7: "oom"}))  # type: ignore[arg-type]
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         yield client, service
@@ -96,7 +95,7 @@ async def test_protected_paths_require_key(ctx, path: str) -> None:  # noqa: ANN
     client, _ = ctx
     response = await client.get(path, headers={"X-API-Key": "wrong"})
     assert response.status_code == 401
-    assert response.json() == {"success": False, "data": None, "error": "Unauthorized"}
+    assert response.json()["error"] == {"code": "UNAUTHORIZED", "message": "Unauthorized"}
 
 
 async def test_list_runs_envelope(ctx) -> None:  # noqa: ANN001
@@ -139,7 +138,8 @@ async def test_get_unknown_run_is_404(ctx) -> None:  # noqa: ANN001
     client, _ = ctx
     response = await client.get("/api/v1/runs/run-404", headers=HEADERS)
     assert response.status_code == 404
-    assert "run-404" in response.json()["error"]
+    assert response.json()["error"]["code"] == "NOT_FOUND"
+    assert "run-404" in response.json()["error"]["message"]
 
 
 async def test_actions_forward_to_service(ctx) -> None:  # noqa: ANN001
@@ -147,12 +147,13 @@ async def test_actions_forward_to_service(ctx) -> None:  # noqa: ANN001
     for path, body in [
         ("decide", {"action": "pause"}),
         ("extend", {"minutes": 30}),
-        ("resume", {"gpu_type": "A5000"}),
+        ("resume", {"gpu_type": "L4"}),
         ("resume", {"gpu_type": None}),
-        ("stop", {}),
     ]:
         response = await client.post(f"/api/v1/runs/run-1/{path}", json=body, headers=HEADERS)
-        assert response.json() == {"success": True, "data": {"ok": True}, "error": None}
+        assert response.json()["data"]["run_id"] == "run-1"  # actions return the run
+    stopped = await client.post("/api/v1/runs/run-1/stop", json={}, headers=HEADERS)
+    assert stopped.json()["data"] == {"ok": True}
     assert ("decide", ("run-1", "pause")) in service.calls
     assert ("resume", ("run-1", None)) in service.calls
     assert ("stop", "run-1") in service.calls
@@ -171,13 +172,14 @@ async def test_logs_and_wallet(ctx) -> None:  # noqa: ANN001
     logs = (await client.get("/api/v1/runs/run-1/logs", headers=HEADERS)).json()
     assert logs["data"] == {"log_tail": "step=1 loss=1.0", "losses": [1.0]}
     wallet = (await client.get("/api/v1/wallet", headers=HEADERS)).json()
-    assert wallet["data"]["balance"] == 12.5
+    assert wallet["data"]["balance"] == 4050.0
+    assert wallet["data"]["currency"] == "INR"
     assert wallet["data"]["critical_threshold"] == 250.0
 
 
 def test_missing_api_key_refuses_to_start() -> None:
     settings = Settings(backend_api_key="", provider="fake", llm="off", _env_file=None)
-    app = create_app(settings, service=FakeService(), balance=_balance)  # type: ignore[arg-type]
+    app = create_app(settings, service=FakeService(), provider=FakeProvider({}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="BACKEND_API_KEY"):
         app.build_middleware_stack()
 
@@ -186,3 +188,36 @@ def test_missing_api_key_refuses_to_start() -> None:
 async def test_api_docs_are_not_public(ctx, path: str) -> None:  # noqa: ANN001
     client, _ = ctx
     assert (await client.get(path)).status_code == 404
+
+
+async def test_start_run_with_dashboard_policy(ctx) -> None:  # noqa: ANN001
+    client, service = ctx
+    body = {
+        "machine_id": 7,
+        "policy": {
+            "preset_id": "demo",
+            "check_interval_min": 1,
+            "idle_threshold_pct": 5,
+            "idle_window_min": 5,
+            "reminder_timeout_min": 2,
+            "on_no_response": "notify_only",
+        },
+    }
+    response = await client.post("/api/v1/runs", json=body, headers=HEADERS)
+    assert response.status_code == 201
+    _, (machine_id, name, gpu_type, _, policy) = service.calls[-1]
+    assert (machine_id, name, gpu_type) == (7, "demo-7-oom", "A30")  # filled from the instance
+    assert policy.probe_interval_s == 60
+    assert policy.decision_timeout_s == 120
+    assert policy.auto_pause_on_timeout is False
+
+
+async def test_eligible_policies_and_telegram(ctx) -> None:  # noqa: ANN001
+    client, _ = ctx
+    eligible = (await client.get("/api/v1/instances/eligible", headers=HEADERS)).json()["data"]
+    assert [i["machine_id"] for i in eligible] == [7]
+    assert eligible[0]["hourly_rate"] == 38.88
+    presets = (await client.get("/api/v1/policies", headers=HEADERS)).json()["data"]
+    assert {p["id"] for p in presets} >= {"demo", "balanced", "notify_only"}
+    status = (await client.get("/api/v1/telegram/status", headers=HEADERS)).json()["data"]
+    assert status == {"linked": False, "username": None, "link_url": None}

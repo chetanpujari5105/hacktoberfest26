@@ -189,6 +189,11 @@ class RunGuardWorkflow:
         decision = await self._await_decision(timedelta(seconds=self._policy.decision_timeout_s))
         if self._stop:
             return
+        if decision is None and not self._policy.auto_pause_on_timeout:
+            self._snooze_s = max(self._snooze_s, self._policy.keep_snooze_s)
+            self._set_status(RunStatus.WATCHING)
+            self._log("decision", "No response; notify-only policy keeps the run going")
+            return
         if decision in ("keep", "resolved"):
             self._snooze_s = max(self._snooze_s, self._policy.keep_snooze_s)
             self._set_status(RunStatus.WATCHING)

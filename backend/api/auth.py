@@ -7,6 +7,8 @@ import json
 
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from api.envelope import error_body
+
 PROTECTED_PREFIXES = ("/api/v1", "/mcp")
 HEADER = b"x-api-key"
 
@@ -26,7 +28,7 @@ class ApiKeyMiddleware:
         if hmac.compare_digest(supplied, self._key):
             await self._app(scope, receive, send)
             return
-        body = json.dumps({"success": False, "data": None, "error": "Unauthorized"}).encode()
+        body = json.dumps(error_body(401, "Unauthorized")).encode()
         await send(
             {
                 "type": "http.response.start",

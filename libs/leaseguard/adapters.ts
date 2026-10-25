@@ -19,6 +19,7 @@ import {
   type VerdictKind,
   type Wallet,
 } from "@/libs/leaseguard/types";
+import { normalizeBackendRun } from "@/libs/leaseguard/fromBackend";
 
 /**
  * The ONLY place backend snake_case JSON becomes frontend camelCase.
@@ -149,7 +150,8 @@ function adaptAllowedActions(v: unknown): RunAction[] | undefined {
 
 const compact = <T>(list: (T | undefined)[]): T[] => list.filter((x): x is T => x !== undefined);
 
-export function adaptRun(raw: unknown): Run | undefined {
+export function adaptRun(input: unknown): Run | undefined {
+  const raw = normalizeBackendRun(input);
   if (!isObject(raw)) return undefined;
   const id = typeof raw.id === "number" ? String(raw.id) : str(raw.id);
   if (!id) return undefined;

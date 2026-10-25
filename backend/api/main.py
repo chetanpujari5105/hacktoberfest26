@@ -6,7 +6,7 @@ Run: ``uvicorn api.main:build --factory --host 0.0.0.0 --port 8000``
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -20,6 +20,7 @@ from config import Settings, get_settings
 from guard.service import RunService
 from guard.temporal_client import build_service, connect
 from logsetup import configure_logging
+from providers.base import GpuProvider
 from providers.factory import build_provider
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 def create_app(
     settings: Settings,
     service: RunService | None = None,
-    balance: Callable[[], Awaitable[float]] | None = None,
+    provider: GpuProvider | None = None,
 ) -> FastAPI:
     holder: dict[str, RunService] = {"service": service} if service is not None else {}
     mcp_app = build_mcp(lambda: holder["service"]).http_app(path="/")
@@ -51,7 +52,7 @@ def create_app(
     )
     app.state.settings = settings
     app.state.service = service
-    app.state.balance = balance or build_provider(settings).balance
+    app.state.provider = provider or build_provider(settings)
     install_handlers(app)
     app.include_router(router)
     app.mount("/mcp", mcp_app)
