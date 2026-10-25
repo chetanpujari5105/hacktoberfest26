@@ -25,7 +25,8 @@ async def _bot_username(token: str) -> str | None:
             username = response.json().get("result", {}).get("username")
     except httpx.HTTPError:
         logger.warning("Telegram getMe failed")  # never log the URL: it holds the token
-    _usernames[token] = username
+    if username:  # cache successes only, so a network blip doesn't stick
+        _usernames[token] = username
     return username
 
 
