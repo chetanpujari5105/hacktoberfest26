@@ -1,9 +1,13 @@
 import { auth } from "@/auth";
+import { isAuthDisabled } from "@/libs/authMode";
 import { NextResponse } from "next/server";
 
 const publicPaths = ["/", "/login", "/api/auth", "/api"];
 
 export default auth((req) => {
+  if (isAuthDisabled()) {
+    return NextResponse.next();
+  }
   const { pathname } = req.nextUrl;
   const isPublic = publicPaths.some(
     (p) => pathname === p || pathname.startsWith(p + "/")

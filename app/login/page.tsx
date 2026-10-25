@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import config from "@/config";
 import content from "@/content";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { isAuthDisabled } from "@/libs/authMode";
 
 interface LoginPageProps {
   searchParams: Promise<{ callbackUrl?: string }>;
@@ -16,6 +17,9 @@ function getSafeCallbackUrl(raw: string | undefined): string {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
+  if (isAuthDisabled()) {
+    redirect(config.auth.callbackUrl);
+  }
   const session = await auth();
   if (session?.user) {
     redirect(config.auth.callbackUrl);

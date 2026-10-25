@@ -14,13 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: { signIn: "/login" },
   session: { strategy: "database" },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log("=== USER SIGN IN ===");
-      console.log("User:", JSON.stringify(user, null, 2));
-      console.log("Account:", JSON.stringify(account, null, 2));
-      console.log("Profile:", JSON.stringify(profile, null, 2));
-      console.log("====================");
-
+    async signIn({ user, profile }) {
       // Sync Google profile data to DB on every sign-in
       if (user.id && profile) {
         await prisma.user.update({

@@ -1,0 +1,12 @@
+{
+  "name": "leaseguard",
+  "displayName": "LeaseGuard",
+  "version": "0.1.0",
+  "description": "Triage stalled or crashed GPU training runs flagged by LeaseGuard, and keep new Jarvislabs GPUs guarded.",
+  "author": {
+    "name": "LeaseGuard team"
+  },
+  "repository": "https://github.com/chetanpujari5105/hacktoberfest26",
+  "license": "MIT",
+  "keywords": ["sre", "gpu", "jarvislabs", "temporal", "triage"]
+}

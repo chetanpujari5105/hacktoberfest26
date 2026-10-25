@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Python backend (incl. its virtualenv) and the Kepler plugin are not linted here.
+    "backend/**",
+    "kepler-plugin/**",
+    "demo/**",
   ]),
 ]);
 

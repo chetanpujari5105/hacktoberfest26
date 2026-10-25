@@ -1,0 +1,8 @@
+.venv
+.env
+secrets
+tests
+__pycache__
+.pytest_cache
+.ruff_cache
+.coverage

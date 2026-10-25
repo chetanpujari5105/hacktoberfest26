@@ -1,0 +1,5 @@
+# Automatic HTTPS for <droplet-ip>.sslip.io (no domain purchase needed).
+{$PUBLIC_HOST} {
+	encode gzip
+	reverse_proxy api:8000
+}

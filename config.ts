@@ -50,11 +50,23 @@ const config = {
     // subdomain to use when sending emails, if you don't have a subdomain, just remove it
     subdomain: "mg",
     // email address to send from (eg: "support@yourdomain.com")
-    fromNoReply: `ShipNext <noreply@mg.example.com>`,
+    fromNoReply: `LeaseGuard <noreply@mg.example.com>`,
     // email address to forward support emails to (eg: "support@yourdomain.com")
-    fromAdmin: `ShipNext Team <team@mg.example.com>`,
+    fromAdmin: `LeaseGuard Team <team@mg.example.com>`,
     // email used in the "reply-to" header of support emails
     supportEmail: "support@example.com",
+  },
+
+  // LeaseGuard dashboard behaviour
+  leaseguard: {
+    // How often the dashboard re-fetches runs and the wallet
+    pollIntervalMs: 3000,
+    // Snooze length for "Keep" / "Extend" buttons
+    snoozeMinutes: 30,
+    // Cheaper GPU offered on the "Resume on ..." button
+    resumeGpuOption: "L4",
+    // Pre-filled hourly cost (₹) in the "Guard a run" form; A30 on-demand rate
+    defaultHourlyCostInr: 38.88,
   },
 
   // NextAuth authentication

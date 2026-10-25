@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "leaseguard": {
+      "type": "http",
+      "url": "${LEASEGUARD_URL}/mcp/",
+      "headers": {
+        "X-API-Key": "${LEASEGUARD_API_KEY}"
+      }
+    }
+  }
+}

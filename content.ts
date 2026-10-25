@@ -5,14 +5,14 @@
 
 export const content = {
   // App identity
-  appName: "ShipNext",
-  appTagline: "Ship your SaaS",
-  appTagSubline: "in days.",
-  appTaglineHighlight: "Not weeks.",
+  appName: "LeaseGuard",
+  appTagline: "Stop paying for",
+  appTagSubline: "idle GPUs.",
+  appTaglineHighlight: "Keep your work.",
 
   // SEO description
   appDescription:
-    "A production-ready Next.js 16 starter template with authentication, payments, and everything you need to launch your SaaS fast.",
+    "LeaseGuard watches your Jarvislabs training runs, uses Gemma 4 to tell finished runs from broken ones, checkpoints and pauses the finished ones, and hands broken ones to Kepler to diagnose.",
 
   // Domain (no https://, no trailing slash)
   domainName: "",
@@ -20,24 +20,24 @@ export const content = {
   // Feature listicle steps for landing page
   featurelisticleSteps: [
     {
-      step: "Clone",
-      title: "Start with a solid foundation.",
+      step: "Watch",
+      title: "Every run gets a durable guard.",
       description:
-        "Clone the repo and you're ready to go. Next.js 16, Tailwind CSS 4, daisyUI 5, and TypeScript already configured.",
+        "A Temporal workflow probes GPU utilisation and your training log, and survives crashes and restarts.",
       image: "",
     },
     {
-      step: "Customize",
-      title: "Make it yours.",
+      step: "Judge",
+      title: "Gemma 4 reads the loss curve.",
       description:
-        "Update the theme, branding, and content. Everything is organized and documented for easy customization.",
+        "Finished, still learning, or broken? Gemma 4 looks at the chart, GPU stats and logs, and decides with a function call.",
       image: "",
     },
     {
-      step: "Launch",
-      title: "Deploy and start earning.",
+      step: "Act",
+      title: "Checkpoint, pause, or triage.",
       description:
-        "Authentication, payments, and email are pre-wired. Just add your API keys and deploy to Vercel.",
+        "Finished runs are checkpointed and paused. Broken runs go to Kepler for diagnosis. Resume later on a cheaper GPU.",
       image: "",
     },
   ],
@@ -83,14 +83,14 @@ export const content = {
     subheadline: "",
     questions: [
       {
-        question: "What's included in the template?",
+        question: "Will LeaseGuard kill my training?",
         answer:
-          "Everything you need to launch a SaaS: Next.js 16 App Router, Tailwind CSS 4, daisyUI 5, NextAuth.js, Prisma ORM, Stripe payments, and Mailgun email integration.",
+          "No. It checkpoints before pausing, asks you on Telegram first, and never pauses a run that looks broken; those go to Kepler for diagnosis.",
       },
       {
-        question: "Can I use this for commercial projects?",
+        question: "Which GPU clouds are supported?",
         answer:
-          "Yes! You have full rights to use this template for personal and commercial projects. No attribution required.",
+          "Jarvislabs today, through its SDK and the jl CLI. The provider interface makes other clouds a small addition.",
       },
       {
         question: "How do I get support?",

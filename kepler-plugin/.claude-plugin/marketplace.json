@@ -1,0 +1,14 @@
+{
+  "name": "leaseguard-local",
+  "description": "Local marketplace for the LeaseGuard Kepler / Claude Code plugin.",
+  "owner": {
+    "name": "LeaseGuard team"
+  },
+  "plugins": [
+    {
+      "name": "leaseguard",
+      "source": ".",
+      "description": "Triage stalled or crashed GPU training runs flagged by LeaseGuard."
+    }
+  ]
+}

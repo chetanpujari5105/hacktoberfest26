@@ -24,7 +24,7 @@ npm run lint     # ESLint 9 flat config (eslint.config.mjs)
 ### Integrations
 
 - **NextAuth** (Google OAuth) + Prisma adapter
-- **Prisma** ORM with PostgreSQL/SQLite
+- **Prisma** ORM with MongoDB (`MONGODB_URI`)
 - **Stripe** (payments) — ready to configure
 - **Mailgun** (email) — ready to configure
 
@@ -60,4 +60,4 @@ content.ts        → Static content (marketing copy, taglines, feature steps)
 - **`config.ts`** — App configuration: `stripe.plans[]`, `mailgun`, `auth.loginUrl`, `auth.callbackUrl`, `theme`. Import as `@/config`.
 - **`content.ts`** — Static content: `appName`, `appTagline`, `appDescription`, `featurelisticleSteps`. Import as `@/content`.
 - **`app/globals.css`** — `@import "tailwindcss"` + `@theme inline {}` block for design tokens. Custom `shipnext` theme.
-- **`.env.local`** — `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_ID`, `GOOGLE_SECRET`, `DATABASE_URL`, `STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `MAILGUN_API_KEY`
+- **`.env.local`** — `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_ID`, `GOOGLE_SECRET`, `MONGODB_URI`, `BACKEND_URL`, `BACKEND_API_KEY`, `STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `MAILGUN_API_KEY`

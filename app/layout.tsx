@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gabarito } from "next/font/google";
 import { Geist_Mono } from "next/font/google";
 import AuthProvider from "@/components/AuthProvider";
+import content from "@/content";
 import "./globals.css";
 
 const gabarito = Gabarito({
@@ -17,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShipNext",
-  description: "Ship your SaaS in days, not weeks",
+  title: content.appName,
+  description: content.appDescription,
 };
 
 export default function RootLayout({
