@@ -1,50 +1,49 @@
-import type { Verdict, VerdictAction } from "@/libs/backend-types";
-import { formatTime } from "@/libs/runs";
-import { Panel } from "@/components/ui/Panel";
+import RelativeTime from "@/components/leaseguard/RelativeTime";
+import VerdictBadge from "@/components/leaseguard/VerdictBadge";
+import type { Verdict } from "@/libs/leaseguard/types";
 
-interface VerdictCardProps {
-  verdict: Verdict | null;
-}
-
-const ACTION_META: Record<VerdictAction, { label: string; className: string }> = {
-  pause_run: { label: "pause_run", className: "badge-success" },
-  keep_running: { label: "keep_running", className: "badge-info" },
-  escalate_to_kepler: { label: "escalate_to_kepler", className: "badge-error" },
-};
-
-export default function VerdictCard({ verdict }: VerdictCardProps) {
+/** Secondary to the evidence: the guard's conclusion, never more than the backend said. */
+export default function VerdictCard({ verdict }: { verdict?: Verdict }) {
   return (
-    <Panel
-      title="Gemma 4 verdict"
-      actions={
-        verdict && (
-          <span className={`badge badge-sm ${verdict.source === "gemma" ? "badge-primary" : "badge-ghost"}`}>
-            {verdict.source === "gemma" ? "Gemma 4" : "rules fallback"}
-          </span>
-        )
-      }
-    >
+    <section aria-labelledby="verdict-heading" className="panel space-y-4 p-4 sm:p-5">
+      <h2 id="verdict-heading" className="text-base font-semibold tracking-tight">
+        Verdict
+      </h2>
       {!verdict ? (
-        <p className="text-sm text-base-content/50">
-          No verdict yet. Gemma is only asked when the rules spot something suspicious.
-        </p>
+        <p className="text-sm text-base-content/75">The guard hasn&apos;t produced a verdict for this run yet.</p>
       ) : (
         <>
-          <p className="font-mono text-sm">
-            <span className={`badge ${ACTION_META[verdict.action].className}`}>
-              {ACTION_META[verdict.action].label}
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <VerdictBadge kind={verdict.kind} size="md" />
+            {verdict.confidence !== undefined && (
+              <span className="num text-xs text-base-content/75">Confidence {Math.round(verdict.confidence * 100)}%</span>
+            )}
+          </div>
+          <p className="text-sm leading-relaxed">{verdict.reason}</p>
+          {verdict.evidence && verdict.evidence.length > 0 && (
+            <div>
+              <h3 className="text-xs font-medium text-base-content/75">Observed</h3>
+              <ul className="mt-1.5 space-y-1.5 text-sm">
+                {verdict.evidence.map((e) => (
+                  <li key={e} className="flex gap-2">
+                    <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-base-content/50" />
+                    <span className="text-base-content/90">{e}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {verdict.aiExplanation && (
+            <div className="rounded-lg bg-base-100/60 p-3 ring-1 ring-base-content/[0.06] ring-inset">
+              <h3 className="text-xs font-medium text-base-content/75">AI explanation — based on the evidence above</h3>
+              <p className="mt-1 text-sm leading-relaxed text-base-content/80">{verdict.aiExplanation}</p>
+            </div>
+          )}
+          <p className="text-xs text-base-content/70">
+            Observed <RelativeTime iso={verdict.observedAt} />
           </p>
-          <p className="text-sm">{verdict.reason}</p>
-          {verdict.symptom && (
-            <p className="text-sm text-error">Symptom: {verdict.symptom}</p>
-          )}
-          {verdict.recheck_minutes != null && (
-            <p className="text-xs text-base-content/50">Recheck in {verdict.recheck_minutes} min</p>
-          )}
-          <p className="text-xs text-base-content/40">at {formatTime(verdict.at)}</p>
         </>
       )}
-    </Panel>
+    </section>
   );
 }

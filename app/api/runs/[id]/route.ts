@@ -1,11 +1,18 @@
-import type { NextRequest } from "next/server";
-import { badRequest, proxyToBackend, withSession } from "@/libs/backend";
-import { isValidRunId } from "@/libs/runs";
+import { adaptRun } from "@/libs/leaseguard/adapters";
+import { backendFetch } from "@/libs/leaseguard/backend";
+import { errorResponse, isApiError, isDemoMode, parseRunId, requireSession, respond } from "@/libs/leaseguard/bff";
+import { demoStore } from "@/libs/leaseguard/demo-store";
 
-export const GET = withSession(
-  async (_request: NextRequest, ctx: RouteContext<"/api/runs/[id]">) => {
-    const { id } = await ctx.params;
-    if (!isValidRunId(id)) return badRequest("Invalid run id");
-    return proxyToBackend(`/runs/${encodeURIComponent(id)}`);
-  }
-);
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const route = "GET /api/runs/[id]";
+  const denied = await requireSession(route);
+  if (denied) return denied;
+
+  const id = parseRunId((await params).id);
+  if (isApiError(id)) return errorResponse(route, id);
+
+  const result = isDemoMode()
+    ? demoStore.getRun(id)
+    : await backendFetch<unknown>(`/api/v1/runs/${encodeURIComponent(id)}`);
+  return respond(route, result, adaptRun);
+}

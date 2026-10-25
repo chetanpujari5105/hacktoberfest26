@@ -1,40 +1,37 @@
-import { badRequest, proxyToBackend, readJsonBody, withSession } from "@/libs/backend";
-import type { StartRunInput } from "@/libs/backend-types";
+import { adaptRun, adaptRunList } from "@/libs/leaseguard/adapters";
+import { backendFetch } from "@/libs/leaseguard/backend";
+import {
+  errorResponse,
+  isApiError,
+  isDemoMode,
+  readJsonObject,
+  requireSession,
+  respond,
+  validateStartGuardBody,
+} from "@/libs/leaseguard/bff";
+import { demoStore } from "@/libs/leaseguard/demo-store";
 
-const MAX_NAME_LENGTH = 80;
+export async function GET() {
+  const route = "GET /api/runs";
+  const denied = await requireSession(route);
+  if (denied) return denied;
 
-function parseStartRun(body: unknown): StartRunInput | string {
-  if (typeof body !== "object" || body === null) return "Request body must be JSON";
-  const { machine_id, name, gpu_type, hourly_cost_inr } = body as Record<string, unknown>;
-
-  if (typeof machine_id !== "number" || !Number.isInteger(machine_id) || machine_id <= 0) {
-    return "machine_id must be a positive integer";
-  }
-  if (typeof name !== "string" || !name.trim() || name.length > MAX_NAME_LENGTH) {
-    return `name is required (max ${MAX_NAME_LENGTH} characters)`;
-  }
-  if (gpu_type != null && (typeof gpu_type !== "string" || !gpu_type.trim())) {
-    return "gpu_type must be a non-empty string";
-  }
-  if (
-    hourly_cost_inr != null &&
-    (typeof hourly_cost_inr !== "number" || !(hourly_cost_inr > 0))
-  ) {
-    return "hourly_cost_inr must be a positive number";
-  }
-
-  return {
-    machine_id,
-    name: name.trim(),
-    gpu_type: typeof gpu_type === "string" ? gpu_type.trim() : null,
-    ...(typeof hourly_cost_inr === "number" ? { hourly_cost_inr } : {}),
-  };
+  const result = isDemoMode() ? demoStore.listRuns() : await backendFetch<unknown>("/api/v1/runs");
+  return respond(route, result, adaptRunList);
 }
 
-export const GET = withSession(async () => proxyToBackend("/runs"));
+export async function POST(request: Request) {
+  const route = "POST /api/runs";
+  const denied = await requireSession(route);
+  if (denied) return denied;
 
-export const POST = withSession(async (request: Request) => {
-  const parsed = parseStartRun(await readJsonBody(request));
-  if (typeof parsed === "string") return badRequest(parsed);
-  return proxyToBackend("/runs", { method: "POST", body: parsed });
-});
+  const json = await readJsonObject(request);
+  if (isApiError(json)) return errorResponse(route, json);
+  const body = validateStartGuardBody(json);
+  if (isApiError(body)) return errorResponse(route, body);
+
+  const result = isDemoMode()
+    ? demoStore.startGuard(body)
+    : await backendFetch<unknown>("/api/v1/runs", { method: "POST", body });
+  return respond(route, result, adaptRun);
+}

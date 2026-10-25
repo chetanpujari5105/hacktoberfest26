@@ -1,21 +1,22 @@
+import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import FeaturesListicle from "@/components/FeaturesListicle";
-import Pricing from "@/components/Pricing";
-import FAQ from "@/components/FAQ";
-import CTA from "@/components/CTA";
+import HowItWorks from "@/components/HowItWorks";
 import Footer from "@/components/Footer";
+import content from "@/content";
+
+export const metadata: Metadata = {
+  title: `${content.appName} — ${content.appTagline}`,
+  description: content.appDescription,
+};
 
 export default function Home() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <Hero />
-        <FeaturesListicle />
-        <Pricing />
-        <FAQ />
-        <CTA />
+        <HowItWorks />
       </main>
       <Footer />
     </>

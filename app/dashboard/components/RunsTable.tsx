@@ -1,61 +1,65 @@
 import Link from "next/link";
-import type { RunView } from "@/libs/backend-types";
-import RunStatusBadge from "@/components/RunStatusBadge";
-import LossSparkline from "@/components/LossSparkline";
-import LiveSavings from "@/components/LiveSavings";
+import LeaseCell from "@/app/dashboard/components/LeaseCell";
+import NextAction from "@/app/dashboard/components/NextAction";
+import RelativeTime from "@/components/leaseguard/RelativeTime";
+import StatusBadge from "@/components/leaseguard/StatusBadge";
+import UtilBar from "@/components/leaseguard/UtilBar";
+import { formatGpu } from "@/libs/leaseguard/format";
+import type { Run } from "@/libs/leaseguard/types";
 
-interface RunsTableProps {
-  runs: RunView[];
-}
-
-export default function RunsTable({ runs }: RunsTableProps) {
-  if (runs.length === 0) {
-    return (
-      <p className="py-6 text-center text-sm text-base-content/50">
-        No guarded runs yet. Guard a Jarvislabs instance below.
-      </p>
-    );
-  }
-
+/** md+ table. Each row links to its detail page via the run name. */
+export default function RunsTable({ runs, highlightId }: { runs: Run[]; highlightId?: string }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="table table-sm">
+    <div className="panel hidden overflow-x-auto md:block">
+      <table className="w-full text-left text-sm">
+        <caption className="sr-only">Guarded GPU runs</caption>
         <thead>
-          <tr>
-            <th>Run</th>
-            <th>Status</th>
-            <th>GPU</th>
-            <th>Loss</th>
-            <th>Verdict</th>
-            <th className="text-right">Saved</th>
+          <tr className="border-b border-base-content/[0.07] text-xs text-base-content/70">
+            <th scope="col" className="px-4 py-2.5 font-medium">Run</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">Status</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">GPU util</th>
+            <th scope="col" className="hidden px-3 py-2.5 font-medium lg:table-cell">Last checked</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">Lease</th>
+            <th scope="col" className="px-4 py-2.5 text-right font-medium">
+              <span className="sr-only">Next action</span>
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-base-content/[0.06]">
           {runs.map((run) => (
-            <tr key={run.run_id} className="hover">
-              <td>
-                <Link href={`/dashboard/runs/${run.run_id}`} className="link link-hover font-medium">
+            <tr
+              key={run.id}
+              className={`relative transition-colors hover:bg-base-content/[0.025] ${
+                run.id === highlightId ? "bg-accent/[0.05]" : ""
+              }`}
+            >
+              <td className="px-4 py-3.5">
+                <Link
+                  href={`/dashboard/runs/${encodeURIComponent(run.id)}`}
+                  title={run.name}
+                  className="num block max-w-[26ch] truncate font-medium after:absolute after:inset-0 after:content-[''] hover:text-primary focus-visible:outline-none focus-visible:after:rounded-md focus-visible:after:outline-2 focus-visible:after:outline-primary"
+                >
                   {run.name}
                 </Link>
-                <p className="text-xs text-base-content/50">
-                  {run.run_id} · machine {run.machine_id}
-                </p>
+                <p className="num mt-0.5 text-xs text-base-content/70">{formatGpu(run.gpuType, run.gpuCount)}</p>
               </td>
-              <td>
-                <RunStatusBadge status={run.status} stale={run.stale} />
+              <td className="px-3 py-3.5">
+                <StatusBadge status={run.status} />
               </td>
-              <td className="tabular-nums">
-                {run.last_probe ? `${Math.round(run.last_probe.gpu_util_pct)}%` : "—"}
-                {run.gpu_type && <p className="text-xs text-base-content/50">{run.gpu_type}</p>}
+              <td className="px-3 py-3.5">
+                <UtilBar
+                  value={run.status === "paused" ? undefined : run.latestProbe?.gpuUtilPct}
+                  threshold={run.policy.idleThresholdPct}
+                />
               </td>
-              <td>
-                <LossSparkline losses={run.last_probe?.losses ?? []} />
+              <td className="hidden px-3 py-3.5 text-base-content/80 lg:table-cell">
+                <RelativeTime iso={run.latestProbe?.at} />
               </td>
-              <td className="max-w-xs truncate text-xs text-base-content/70">
-                {run.last_verdict?.reason ?? "—"}
+              <td className="px-3 py-3.5">
+                <LeaseCell run={run} />
               </td>
-              <td className="text-right">
-                <LiveSavings runs={[run]} />
+              <td className="px-4 py-3.5 text-right">
+                <NextAction run={run} />
               </td>
             </tr>
           ))}

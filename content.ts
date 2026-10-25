@@ -6,96 +6,36 @@
 export const content = {
   // App identity
   appName: "LeaseGuard",
-  appTagline: "Stop paying for",
-  appTagSubline: "idle GPUs.",
-  appTaglineHighlight: "Keep your work.",
+  appTagline: "Stop paying for idle GPUs",
 
   // SEO description
   appDescription:
-    "LeaseGuard watches your Jarvislabs training runs, uses Gemma 4 to tell finished runs from broken ones, checkpoints and pauses the finished ones, and hands broken ones to Kepler to diagnose.",
+    "LeaseGuard watches your JarvisLabs GPU runs — utilization, memory, processes and training logs — and asks you on Telegram before it checkpoints and pauses anything that has gone quiet.",
 
   // Domain (no https://, no trailing slash)
   domainName: "",
 
-  // Feature listicle steps for landing page
-  featurelisticleSteps: [
-    {
-      step: "Watch",
-      title: "Every run gets a durable guard.",
-      description:
-        "A Temporal workflow probes GPU utilisation and your training log, and survives crashes and restarts.",
-      image: "",
-    },
-    {
-      step: "Judge",
-      title: "Gemma 4 reads the loss curve.",
-      description:
-        "Finished, still learning, or broken? Gemma 4 looks at the chart, GPU stats and logs, and decides with a function call.",
-      image: "",
-    },
-    {
-      step: "Act",
-      title: "Checkpoint, pause, or triage.",
-      description:
-        "Finished runs are checkpointed and paused. Broken runs go to Kepler for diagnosis. Resume later on a cheaper GPU.",
-      image: "",
-    },
-  ],
-
-  // Pricing section
-  pricing: {
-    headline: "Simple, transparent pricing.",
-    subheadline: "Start building today. Scale when you're ready.",
-    plans: [
+  // Landing page: how it works
+  howItWorks: {
+    headline: "Evidence first, then a decision, then a safe pause.",
+    steps: [
       {
-        name: "Starter",
-        price: 9,
-        period: "/month",
-        features: [
-          "All core features",
-          "Up to 1,000 users",
-          "Community support",
-        ],
-        buttonText: "Get Started",
-        isFeatured: false,
+        step: "Probe",
+        title: "Read what the GPU is actually doing",
+        description:
+          "On a schedule you choose, the guard checks GPU utilization, memory, the training process and the latest log lines. Not a timer — evidence.",
       },
       {
-        name: "Pro",
-        price: 49,
-        period: "/month",
-        badge: "MOST POPULAR",
-        features: [
-          "Everything in Starter",
-          "Unlimited users",
-          "Priority support",
-          "Advanced analytics",
-          "Custom integrations",
-        ],
-        buttonText: "Upgrade to Pro",
-        isFeatured: true,
-      },
-    ],
-  },
-
-  // FAQ
-  faqs: {
-    headline: "Frequently Asked Questions",
-    subheadline: "",
-    questions: [
-      {
-        question: "Will LeaseGuard kill my training?",
-        answer:
-          "No. It checkpoints before pausing, asks you on Telegram first, and never pauses a run that looks broken; those go to Kepler for diagnosis.",
+        step: "Decide",
+        title: "Ask you before acting",
+        description:
+          "When a run looks idle or stuck, you get a Telegram message with the evidence and three buttons: Pause, Keep 30 min, or Extend.",
       },
       {
-        question: "Which GPU clouds are supported?",
-        answer:
-          "Jarvislabs today, through its SDK and the jl CLI. The provider interface makes other clouds a small addition.",
-      },
-      {
-        question: "How do I get support?",
-        answer:
-          "Starter plans have access to community support via Discord. Pro plans include priority email support with faster response times.",
+        step: "Pause safely",
+        title: "Checkpoint, then stop billing",
+        description:
+          "No answer before the deadline and your policy allows it? LeaseGuard saves a checkpoint, then pauses. Compute billing stops; storage is still billed.",
       },
     ],
   },

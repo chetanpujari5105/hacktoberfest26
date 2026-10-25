@@ -1,25 +1,39 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import Header from "@/components/Header";
-import { isAuthDisabled } from "@/libs/authMode";
+import content from "@/content";
+import ConsoleHeader from "@/components/leaseguard/ConsoleHeader";
+import ToastProvider from "@/components/leaseguard/ToastProvider";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = isAuthDisabled() ? null : await auth();
-  if (!isAuthDisabled() && !session?.user) {
+export const metadata: Metadata = {
+  title: { default: `GPU runs · ${content.appName}`, template: `%s · ${content.appName}` },
+  description: content.appDescription,
+};
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session?.user) {
     redirect("/login");
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Dashboard Navbar */}
-      <Header />
-
-      {/* Main Content */}
-      <main className="w-full max-w-[1100px] p-4 mx-auto">{children}</main>
-    </div>
+    <ToastProvider>
+      <div className="flex min-h-screen flex-col">
+        <a
+          href="#main"
+          className="btn btn-primary btn-sm sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+        >
+          Skip to content
+        </a>
+        <ConsoleHeader />
+        <main
+          id="main"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-6 pb-16 outline-none sm:px-6 sm:pt-8"
+        >
+          {children}
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
