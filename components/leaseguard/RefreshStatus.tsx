@@ -39,7 +39,7 @@ export default function RefreshStatus({
   };
 
   return (
-    <div className="flex items-center gap-2 text-sm text-base-content/75">
+    <div className="flex shrink-0 items-center gap-2 text-sm whitespace-nowrap text-base-content/75">
       {stale || failing ? <DataTag kind="stale" /> : <DataTag kind={demo ? "demo" : "live"} />}
       <span title={lastSuccessAt ? formatAbsolute(new Date(lastSuccessAt).toISOString()) : undefined}>
         {ago === undefined ? (

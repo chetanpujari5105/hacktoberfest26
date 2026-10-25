@@ -10,7 +10,7 @@ import type { Run } from "@/libs/leaseguard/types";
 /** md+ table. Each row links to its detail page via the run name. */
 export default function RunsTable({ runs, highlightId }: { runs: Run[]; highlightId?: string }) {
   return (
-    <div className="panel hidden overflow-hidden md:block">
+    <div className="panel hidden overflow-x-auto md:block">
       <table className="w-full text-left text-sm">
         <caption className="sr-only">Guarded GPU runs</caption>
         <thead>

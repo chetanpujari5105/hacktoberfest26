@@ -139,7 +139,7 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+      <div className="space-y-6">
         <div className="min-w-0 space-y-6">
           {runsQ.isLoading ? (
             <DashboardBodySkeleton />
@@ -192,7 +192,7 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
             </>
           )}
         </div>
-        <aside aria-label="Notifications setup" className="min-w-0">
+        <aside aria-label="Telegram notifications" className="min-w-0">
           <TelegramPanel pollIntervalMs={pollIntervalMs * 4} />
         </aside>
       </div>

@@ -38,60 +38,70 @@ export default function TelegramPanel({ pollIntervalMs }: { pollIntervalMs: numb
   };
 
   return (
-    <section aria-labelledby="telegram-heading" className="panel space-y-4 p-4 sm:p-5">
-      <div className="flex items-center justify-between gap-2">
-        <h2 id="telegram-heading" className="flex items-center gap-2 text-base font-semibold tracking-tight">
-          <Send aria-hidden="true" className="h-4 w-4 text-base-content/70" />
-          Telegram reminders
-        </h2>
-        {demo && <DataTag kind="simulated" />}
-      </div>
+    <section
+      aria-labelledby="telegram-heading"
+      className="panel grid gap-5 p-4 sm:p-5 md:grid-cols-2 md:gap-8"
+    >
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 id="telegram-heading" className="flex items-center gap-2 text-base font-semibold tracking-tight">
+            <Send aria-hidden="true" className="h-4 w-4 text-base-content/70" />
+            Telegram reminders
+          </h2>
+          {demo && <DataTag kind="simulated" />}
+        </div>
+        <p className="text-sm text-base-content/75">
+          When a run looks idle, the guard messages you with the evidence and asks what to do. Status here comes from the
+          backend bot.
+        </p>
 
-      <div aria-live="polite">
-        {statusQ.isLoading ? (
-          <div aria-busy="true" aria-label="Loading Telegram status" className="space-y-2">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        ) : !status && statusQ.error ? (
-          statusQ.error.code === "NOT_IMPLEMENTED" ? (
-            <p className="text-sm text-base-content/75">
-              Telegram connection is being set up by the backend. Reminders will appear here once it&apos;s ready.
+        <div aria-live="polite">
+          {statusQ.isLoading ? (
+            <div aria-busy="true" aria-label="Loading Telegram status" className="space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : !status && statusQ.error ? (
+            statusQ.error.code === "NOT_IMPLEMENTED" ? (
+              <p className="text-sm text-base-content/75">
+                Telegram connection is being set up by the backend. Reminders will appear here once it&apos;s ready.
+              </p>
+            ) : (
+              <InlineError polite error={statusQ.error} onRetry={() => void statusQ.refresh()} />
+            )
+          ) : status?.linked ? (
+            <p className="flex items-center gap-2 text-sm">
+              <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-accent" />
+              Connected as <span className="num font-medium">@{status.username ?? "unknown"}</span>
             </p>
           ) : (
-            <InlineError polite error={statusQ.error} onRetry={() => void statusQ.refresh()} />
-          )
-        ) : status?.linked ? (
-          <p className="flex items-center gap-2 text-sm">
-            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-accent" />
-            Connected as <span className="num font-medium">@{status.username ?? "unknown"}</span>
-          </p>
-        ) : (
-          <div className="space-y-3">
-            <p className="flex items-start gap-2 text-sm text-base-content/80">
-              <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-quiet" />
-              Not connected. Without Telegram, reminders can&apos;t reach you.
-            </p>
-            {demo ? (
-              <button type="button" onClick={simulateConnect} disabled={connecting} className="btn btn-sm w-full border-base-content/15 bg-base-300">
-                {connecting && <span className="loading loading-spinner loading-xs" aria-hidden="true" />}
-                {connecting ? "Connecting…" : "Connect Telegram (simulated)"}
-              </button>
-            ) : status?.linkUrl ? (
-              <a href={status.linkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm w-full border-base-content/15 bg-base-300">
-                Connect on Telegram
-                <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
-                <span className="sr-only">(opens in a new tab)</span>
-              </a>
-            ) : (
-              <p className="text-xs text-base-content/70">The backend hasn&apos;t provided a link yet.</p>
-            )}
-            {connectError && <InlineError polite error={connectError} onRetry={simulateConnect} />}
-          </div>
-        )}
+            <div className="space-y-3">
+              <p className="flex items-start gap-2 text-sm text-base-content/80">
+                <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-quiet" />
+                Not connected. Without Telegram, reminders can&apos;t reach you.
+              </p>
+              {demo ? (
+                <button type="button" onClick={connecting ? undefined : simulateConnect} aria-disabled={connecting} className="btn btn-sm w-full border-base-content/15 bg-base-300 sm:w-auto">
+                  {connecting && <span className="loading loading-spinner loading-xs" aria-hidden="true" />}
+                  {connecting ? "Connecting…" : "Connect Telegram (simulated)"}
+                </button>
+              ) : status?.linkUrl ? (
+                <a href={status.linkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm w-full border-base-content/15 bg-base-300 sm:w-auto">
+                  Connect on Telegram
+                  <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+                  <span className="sr-only">(opens in a new tab)</span>
+                </a>
+              ) : (
+                <p className="text-xs text-base-content/70">The backend hasn&apos;t provided a link yet.</p>
+              )}
+              {connectError && <InlineError polite error={connectError} onRetry={simulateConnect} />}
+            </div>
+          )}
+        </div>
+
       </div>
 
-      <div className="space-y-2.5 border-t border-base-content/[0.07] pt-4">
+      <div className="space-y-2.5 border-t border-base-content/[0.07] pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-8">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-medium">What a reminder looks like</h3>
           <DataTag kind="preview" />

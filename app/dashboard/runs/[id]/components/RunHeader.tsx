@@ -21,7 +21,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   return (
     <div className="min-w-0">
       <dt className="text-xs text-base-content/70">{label}</dt>
-      <dd className="mt-0.5 truncate text-sm">{children}</dd>
+      <dd className="mt-0.5 text-sm break-words">{children}</dd>
     </div>
   );
 }
@@ -38,7 +38,7 @@ export default function RunHeader({ run }: { run: Run }) {
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />
         All runs
       </Link>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="num text-2xl font-semibold break-all sm:text-[28px]">{run.name}</h1>
           <p className="num mt-1 text-sm text-base-content/75">
@@ -47,7 +47,7 @@ export default function RunHeader({ run }: { run: Run }) {
         </div>
         <StatusBadge status={run.status} size="md" />
       </div>
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-xl border border-base-content/[0.07] px-4 py-3 sm:grid-cols-3 lg:grid-cols-5">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-xl border border-base-content/[0.07] px-4 py-3 sm:grid-cols-3 xl:grid-cols-5">
         <Fact label="Provider status">{run.providerStatus ?? <span className="text-base-content/70">Unavailable</span>}</Fact>
         <Fact label="Guard">{guardStatus(run)}</Fact>
         <Fact label="Last probe">
