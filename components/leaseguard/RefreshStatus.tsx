@@ -9,7 +9,6 @@ import { formatAbsolute } from "@/libs/leaseguard/format";
 interface RefreshStatusProps {
   lastSuccessAt?: number;
   intervalMs: number;
-  refreshing: boolean;
   failing: boolean;
   demo: boolean;
   onRefresh: () => Promise<void>;
@@ -19,20 +18,24 @@ interface RefreshStatusProps {
 export default function RefreshStatus({
   lastSuccessAt,
   intervalMs,
-  refreshing,
   failing,
   demo,
   onRefresh,
 }: RefreshStatusProps) {
   const now = useNow(1_000);
   const [announcement, setAnnouncement] = useState("");
+  // Only manual refreshes spin; background polls stay quiet.
+  const [manual, setManual] = useState(false);
   const stale = lastSuccessAt !== undefined && now - lastSuccessAt > 2 * intervalMs;
   const ago = lastSuccessAt === undefined ? undefined : Math.max(0, Math.round((now - lastSuccessAt) / 1000));
 
   const handleRefresh = async () => {
+    if (manual) return;
+    setManual(true);
     setAnnouncement("");
     await onRefresh();
-    setAnnouncement(`Refreshed at ${new Date().toLocaleTimeString()}`);
+    setManual(false);
+    setAnnouncement(`Refresh finished at ${new Date().toLocaleTimeString()}`);
   };
 
   return (
@@ -51,11 +54,11 @@ export default function RefreshStatus({
       <button
         type="button"
         onClick={handleRefresh}
-        disabled={refreshing}
+        aria-disabled={manual}
         className="btn btn-ghost btn-sm btn-square"
         aria-label="Refresh now"
       >
-        <RefreshCw aria-hidden="true" className={`h-4 w-4 ${refreshing ? "motion-safe:animate-spin" : ""}`} />
+        <RefreshCw aria-hidden="true" className={`h-4 w-4 ${manual ? "motion-safe:animate-spin" : ""}`} />
       </button>
       <span className="sr-only" aria-live="polite">
         {announcement}

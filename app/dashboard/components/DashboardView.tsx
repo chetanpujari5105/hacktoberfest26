@@ -49,8 +49,12 @@ function matchesFilter(run: Run, filter: RunFilter): boolean {
 const fetchRuns = (signal: AbortSignal) => apiRequest<Run[]>("/api/runs", { signal });
 const fetchWallet = (signal: AbortSignal) => apiRequest<Wallet>("/api/wallet", { signal });
 
+// While a pause/resume is in flight, poll faster so each phase is visible.
+const TRANSITION_POLL_MS = 3_000;
+
 export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIntervalMs: number; maxBackoffMs: number }) {
-  const runsQ = usePolling(fetchRuns, pollIntervalMs, maxBackoffMs);
+  const [fast, setFast] = useState(false);
+  const runsQ = usePolling(fetchRuns, fast ? TRANSITION_POLL_MS : pollIntervalMs, maxBackoffMs);
   const walletQ = usePolling(fetchWallet, pollIntervalMs, maxBackoffMs);
   const toast = useToast();
   const [filter, setFilter] = useState<RunFilter>("all");
@@ -60,6 +64,8 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
 
   const demo = runsQ.meta?.demo === true || walletQ.meta?.demo === true;
   const runs = runsQ.data;
+  const anyTransition = runs?.some(isTransitioning) ?? false;
+  if (anyTransition !== fast) setFast(anyTransition);
 
   const sorted = useMemo(
     () =>
@@ -84,9 +90,11 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
     (r) => matchesFilter(r, filter) && (!q || r.name.toLowerCase().includes(q) || r.gpuType.toLowerCase().includes(q))
   );
 
+  const { refresh: refreshRuns } = runsQ;
+  const { refresh: refreshWallet } = walletQ;
   const refreshAll = useCallback(async () => {
-    await Promise.all([runsQ.refresh(), walletQ.refresh()]);
-  }, [runsQ, walletQ]);
+    await Promise.all([refreshRuns(), refreshWallet()]);
+  }, [refreshRuns, refreshWallet]);
 
   const handleStarted = useCallback(
     (run: Run) => {
@@ -95,9 +103,9 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
       setQuery("");
       setHighlightId(run.id);
       toast({ tone: "success", title: `Guard started on ${run.name}`, description: "First verdict arrives after the initial probes." });
-      void runsQ.refresh();
+      void refreshRuns();
     },
-    [runsQ, toast]
+    [refreshRuns, toast]
   );
 
   const guardButton = (
@@ -123,7 +131,6 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
           <RefreshStatus
             lastSuccessAt={runsQ.lastSuccessAt}
             intervalMs={pollIntervalMs}
-            refreshing={runsQ.isRefreshing}
             failing={!!runsQ.error && !!runsQ.data}
             demo={demo}
             onRefresh={refreshAll}
@@ -147,6 +154,7 @@ export default function DashboardView({ pollIntervalMs, maxBackoffMs }: { pollIn
             <>
               {runsQ.error && (
                 <InlineError
+                  polite
                   error={{ ...runsQ.error, message: `Couldn't refresh — showing the last good data. ${runsQ.error.message}` }}
                   onRetry={refreshAll}
                 />

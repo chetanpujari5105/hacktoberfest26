@@ -19,8 +19,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <ToastProvider>
       <div className="flex min-h-screen flex-col">
+        <a
+          href="#main"
+          className="btn btn-primary btn-sm sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+        >
+          Skip to content
+        </a>
         <ConsoleHeader />
-        <main id="main" className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-6 pb-16 sm:px-6 sm:pt-8">
+        <main
+          id="main"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-6 pb-16 outline-none sm:px-6 sm:pt-8"
+        >
           {children}
         </main>
       </div>

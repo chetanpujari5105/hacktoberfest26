@@ -23,7 +23,7 @@ export default function AttentionStrip({ runs }: { runs: Run[] }) {
           <ul className="space-y-1.5">
             {waiting.slice(0, 3).map((run) => (
               <li key={run.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                <span className="num font-medium">{run.name}</span>
+                <span className="num min-w-0 font-medium break-all">{run.name}</span>
                 <span className="text-base-content/75">
                   {hasAutoPauseDeadline(run) && run.policy.deadlineAt ? (
                     <>

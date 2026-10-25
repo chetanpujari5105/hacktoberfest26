@@ -6,13 +6,16 @@ export default function InlineError({
   error,
   onRetry,
   retryLabel = "Try again",
+  polite = false,
 }: {
   error: ApiError;
   onRetry?: () => void;
   retryLabel?: string;
+  /** Background failures (e.g. a missed poll) are announced politely, not as alerts. */
+  polite?: boolean;
 }) {
   return (
-    <div role="alert" className="flex items-start gap-3 rounded-lg bg-primary/8 p-3 ring-1 ring-primary/25 ring-inset">
+    <div role={polite ? "status" : "alert"} className="flex items-start gap-3 rounded-lg bg-primary/8 p-3 ring-1 ring-primary/25 ring-inset">
       <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-medium">{error.message}</p>

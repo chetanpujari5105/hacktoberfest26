@@ -47,8 +47,8 @@ export default function ConfirmDialog({
           <button
             type="button"
             className={`btn ${tone === "primary" ? "btn-primary" : "btn-neutral"}`}
-            onClick={onConfirm}
-            disabled={pending}
+            onClick={pending ? undefined : onConfirm}
+            aria-disabled={pending}
             aria-busy={pending}
           >
             {pending && <span className="loading loading-spinner loading-sm" aria-hidden="true" />}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import Dialog from "@/components/leaseguard/Dialog";
 import InlineError from "@/components/leaseguard/InlineError";
@@ -21,10 +21,10 @@ export default function GuardRunDialog({ open, onClose, onStarted }: GuardRunDia
 }
 
 type Step = 1 | 2 | 3;
-const STEPS: { step: Step; label: string }[] = [
-  { step: 1, label: "Instance" },
-  { step: 2, label: "Policy" },
-  { step: 3, label: "Review" },
+const STEPS: { step: Step; label: string; title: string }[] = [
+  { step: 1, label: "Instance", title: "Choose an instance" },
+  { step: 2, label: "Policy", title: "Choose a policy" },
+  { step: 3, label: "Review", title: "Review and start" },
 ];
 
 type Lists =
@@ -44,21 +44,33 @@ function GuardRunFlow({ onClose, onStarted }: Omit<GuardRunDialogProps, "open">)
   const [policyId, setPolicyId] = useState<string>();
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState<ApiError>();
+  const mounted = useRef(true);
+  const stepHeading = useRef<HTMLHeadingElement>(null);
+  const firstStep = useRef(true);
 
   useEffect(() => {
-    let active = true;
+    mounted.current = true;
     loadLists().then(([instances, policies]) => {
-      if (active) setLists({ status: "ready", instances, policies });
+      if (mounted.current) setLists({ status: "ready", instances, policies });
     });
     return () => {
-      active = false;
+      mounted.current = false;
     };
   }, []);
+
+  // Move focus to the new step's heading so the change is announced and focus isn't lost.
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    stepHeading.current?.focus();
+  }, [step]);
 
   const reload = useCallback(async () => {
     setLists({ status: "loading" });
     const [instances, policies] = await loadLists();
-    setLists({ status: "ready", instances, policies });
+    if (mounted.current) setLists({ status: "ready", instances, policies });
   }, []);
 
   const instances = lists.status === "ready" && lists.instances.ok ? lists.instances.data : undefined;
@@ -84,6 +96,7 @@ function GuardRunFlow({ onClose, onStarted }: Omit<GuardRunDialogProps, "open">)
         },
       },
     });
+    if (!mounted.current) return;
     setPending(false);
     if (result.ok) onStarted(result.data);
     else setSubmitError(result.error);
@@ -138,11 +151,22 @@ function GuardRunFlow({ onClose, onStarted }: Omit<GuardRunDialogProps, "open">)
             </button>
           )}
           {step < 3 ? (
-            <button type="button" className="btn btn-primary" disabled={!canNext} onClick={() => setStep((s) => (s + 1) as Step)}>
+            <button
+              type="button"
+              className="btn btn-primary aria-disabled:opacity-50"
+              aria-disabled={!canNext}
+              onClick={canNext ? () => setStep((s) => (s + 1) as Step) : undefined}
+            >
               Next
             </button>
           ) : (
-            <button type="button" className="btn btn-primary" disabled={pending} aria-busy={pending} onClick={submit}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              aria-disabled={pending || !instance || !policy}
+              aria-busy={pending}
+              onClick={pending ? undefined : submit}
+            >
               {pending && <span className="loading loading-spinner loading-sm" aria-hidden="true" />}
               {pending ? "Starting guard…" : submitError ? "Try again" : "Start guarding"}
             </button>
@@ -150,6 +174,9 @@ function GuardRunFlow({ onClose, onStarted }: Omit<GuardRunDialogProps, "open">)
         </>
       }
     >
+      <h3 ref={stepHeading} tabIndex={-1} className="mb-3 text-sm font-semibold outline-none">
+        Step {step} of 3 · {STEPS[step - 1].title}
+      </h3>
       {lists.status === "loading" ? (
         <div aria-busy="true" aria-label="Loading options" className="space-y-2.5">
           <Skeleton className="h-16 w-full" />
@@ -236,7 +263,11 @@ function GuardRunFlow({ onClose, onStarted }: Omit<GuardRunDialogProps, "open">)
           </div>
           {submitError && <InlineError error={submitError} />}
         </div>
-      ) : null}
+      ) : (
+        <p className="rounded-lg bg-base-300/60 p-4 text-sm text-base-content/80">
+          The instance or policy you picked is no longer available. Go back and choose again.
+        </p>
+      )}
     </Dialog>
   );
 }

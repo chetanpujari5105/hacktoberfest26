@@ -59,7 +59,7 @@ export default function TelegramPanel({ pollIntervalMs }: { pollIntervalMs: numb
               Telegram connection is being set up by the backend. Reminders will appear here once it&apos;s ready.
             </p>
           ) : (
-            <InlineError error={statusQ.error} onRetry={() => void statusQ.refresh()} />
+            <InlineError polite error={statusQ.error} onRetry={() => void statusQ.refresh()} />
           )
         ) : status?.linked ? (
           <p className="flex items-center gap-2 text-sm">
@@ -86,7 +86,7 @@ export default function TelegramPanel({ pollIntervalMs }: { pollIntervalMs: numb
             ) : (
               <p className="text-xs text-base-content/70">The backend hasn&apos;t provided a link yet.</p>
             )}
-            {connectError && <InlineError error={connectError} onRetry={simulateConnect} />}
+            {connectError && <InlineError polite error={connectError} onRetry={simulateConnect} />}
           </div>
         )}
       </div>

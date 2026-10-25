@@ -25,6 +25,7 @@ export interface PollingResult<T> extends Omit<PollingState<T>, "settled"> {
  * - pauses while the tab is hidden and refetches when it becomes visible
  * - backs off exponentially on consecutive errors (capped at `maxBackoffMs`)
  * - keeps the last good data when a poll fails, so callers can show it as stale
+ * - stops polling after UNAUTHORIZED (the session is gone; refresh() still works)
  *
  * `fetcher` should be stable (module-level or memoised).
  */
@@ -41,6 +42,7 @@ export function usePolling<T>(
     let failures = 0;
     let timer: number | undefined;
     let inflight: AbortController | null = null;
+    let signedOut = false;
 
     const runFetch = async () => {
       inflight?.abort();
@@ -66,6 +68,7 @@ export function usePolling<T>(
         });
       } else {
         failures += 1;
+        signedOut = result.error.code === "UNAUTHORIZED";
         const { error, meta } = result;
         setState((s) => ({ ...s, meta: meta ?? s.meta, error, isRefreshing: false, settled: true }));
       }
@@ -73,7 +76,7 @@ export function usePolling<T>(
 
     const schedule = () => {
       window.clearTimeout(timer);
-      if (disposed || document.visibilityState === "hidden") return;
+      if (disposed || signedOut || document.visibilityState === "hidden") return;
       const delay = Math.min(intervalMs * 2 ** failures, maxBackoffMs);
       timer = window.setTimeout(() => void runFetch().then(schedule), delay);
     };

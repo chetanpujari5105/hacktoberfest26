@@ -172,6 +172,8 @@
 }
 
 html {
+  /* Keep focused elements clear of the sticky console header */
+  scroll-padding-top: 4.5rem;
   scrollbar-color: var(--color-base-300) var(--color-base-100);
   caret-color: var(--color-primary);
 }

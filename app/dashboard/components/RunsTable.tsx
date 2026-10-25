@@ -36,7 +36,8 @@ export default function RunsTable({ runs, highlightId }: { runs: Run[]; highligh
               <td className="px-4 py-3.5">
                 <Link
                   href={`/dashboard/runs/${encodeURIComponent(run.id)}`}
-                  className="num font-medium after:absolute after:inset-0 after:content-[''] hover:text-primary focus-visible:outline-none focus-visible:after:rounded-md focus-visible:after:outline-2 focus-visible:after:outline-primary"
+                  title={run.name}
+                  className="num block max-w-[26ch] truncate font-medium after:absolute after:inset-0 after:content-[''] hover:text-primary focus-visible:outline-none focus-visible:after:rounded-md focus-visible:after:outline-2 focus-visible:after:outline-primary"
                 >
                   {run.name}
                 </Link>

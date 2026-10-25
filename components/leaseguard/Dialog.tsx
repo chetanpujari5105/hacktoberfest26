@@ -3,6 +3,12 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
+/** Return focus to the trigger, or to <main> if the trigger has left the page. */
+function restoreFocus(el: HTMLElement | null) {
+  if (el?.isConnected) el.focus();
+  else document.getElementById("main")?.focus();
+}
+
 interface DialogProps {
   open: boolean;
   onClose: () => void;
@@ -49,7 +55,7 @@ export default function Dialog({
   // Dialogs that unmount while open (e.g. conditionally rendered flows) still return focus.
   useEffect(() => {
     const focusTarget = returnFocus;
-    return () => focusTarget.current?.focus();
+    return () => restoreFocus(focusTarget.current);
   }, []);
 
   useEffect(() => {
@@ -59,15 +65,25 @@ export default function Dialog({
       e.preventDefault();
       if (dismissible) onClose();
     };
+    // Chrome lets a repeated Esc bypass a cancelled `cancel` event; block it outright.
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !dismissible) e.preventDefault();
+    };
     const onCloseEvent = () => {
-      returnFocus.current?.focus();
+      if (open && !dismissible) {
+        dialog.showModal();
+        return;
+      }
+      restoreFocus(returnFocus.current);
       returnFocus.current = null;
       if (open) onClose();
     };
     dialog.addEventListener("cancel", onCancel);
+    dialog.addEventListener("keydown", onKeyDown);
     dialog.addEventListener("close", onCloseEvent);
     return () => {
       dialog.removeEventListener("cancel", onCancel);
+      dialog.removeEventListener("keydown", onKeyDown);
       dialog.removeEventListener("close", onCloseEvent);
     };
   }, [dismissible, onClose, open]);

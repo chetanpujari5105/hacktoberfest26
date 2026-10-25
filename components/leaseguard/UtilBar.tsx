@@ -29,6 +29,7 @@ export default function UtilBar({ value, threshold, muted, className = "" }: Uti
       >
         <span className={`absolute inset-y-0 left-0 rounded-full ${fill}`} style={{ width: `${Math.max(pct, 2)}%` }} />
       </span>
+      {idle && !muted && <span className="text-xs font-medium text-primary">idle</span>}
     </span>
   );
 }

@@ -45,7 +45,7 @@ export default function RunFilters({ filter, onFilter, counts, query, onQuery }:
           );
         })}
       </div>
-      <label className="input input-sm w-full gap-2 border-base-content/10 bg-base-200 sm:w-48">
+      <label className="input input-sm w-full gap-2 border-base-content/30 bg-base-200 sm:w-48">
         <Search aria-hidden="true" className="h-3.5 w-3.5 text-base-content/70" />
         <span className="sr-only">Search runs by name or GPU</span>
         <input

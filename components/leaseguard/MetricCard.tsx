@@ -19,7 +19,7 @@ export default function MetricCard({ label, icon: Icon, value, footnote, tag, em
         {label}
       </span>
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-        <p className={`num text-2xl font-semibold sm:text-[28px] ${emphasis ? "text-primary" : ""}`}>{value}</p>
+        <p className={`num min-w-0 text-xl font-semibold break-all sm:text-2xl lg:text-[28px] ${emphasis ? "text-primary" : ""}`}>{value}</p>
         {tag}
       </div>
       {footnote && <p className="text-xs text-base-content/70">{footnote}</p>}
