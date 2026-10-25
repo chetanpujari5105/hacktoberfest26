@@ -12,7 +12,7 @@ const absoluteFmt = new Intl.DateTimeFormat(undefined, {
 
 const clockFmt = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
 
-const relativeFmt = new Intl.RelativeTimeFormat(undefined, { numeric: "auto", style: "short" });
+const relativeFmt = new Intl.RelativeTimeFormat(undefined, { numeric: "auto", style: "long" });
 
 export function formatAbsolute(isoString: string | undefined): string {
   if (!isoString) return "Unavailable";
